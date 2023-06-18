@@ -1,0 +1,8 @@
+pytest
+opencv-python
+opencv-contrib-python
+ruff
+blue
+pip-audit
+mypy
+pandas

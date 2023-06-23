@@ -13,10 +13,10 @@ class BoVW:
             num_cluster (int): The number of clusters to be used in KMeans clustering.
             kmeans_batch_size (int): The number of samples to be used in each KMeans iteration.
         """
+        self.metadata_columns = ['image_path', 'keypoint_coord_x', 'keypoint_coord_y']
         self.mini_batch_kmeans = MiniBatchKMeans(
             n_clusters=num_cluster, batch_size=kmeans_batch_size
-        ).fit(dictionary)
-        self.metadata_columns = ['image_path', 'keypoint_coord_x', 'keypoint_coord_y']
+        ).fit(dictionary.drop(self.metadata_columns, axis=1))
 
     def _get_single_histogram(self, features: pd.DataFrame) -> tuple:
         """

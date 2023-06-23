@@ -82,7 +82,12 @@ class FeatureExtractor:
 
         return pd.DataFrame.from_records(sift_features)
 
-    def _create_simple_split(self, split_path: str) -> pd.DataFrame:
+    def _create_simple_split(
+        self,
+        split_path: str,
+        dictionary_split: bool = False,
+        dictionary_random_sample_size: float = 0.2,
+    ) -> pd.DataFrame:
         """Create a simple train/test split.
 
         Args:
@@ -97,31 +102,20 @@ class FeatureExtractor:
                 image_path = image_entry.path
                 image = self._read_image(image_path)
                 keypoints, descriptors = self._compute_sift_features(image)
+
+                if dictionary_split:
+                    random_samples = self._get_sample_descriptors(
+                        list(zip(keypoints, descriptors, strict=True)),
+                        dictionary_random_sample_size,
+                    )
+                    keypoints, descriptors = zip(*random_samples, strict=True)
+
                 sift_features = self._sift_features_to_dataframe(image_path, keypoints, descriptors)
                 split_dataframe = pd.concat([split_dataframe, sift_features])
 
         return split_dataframe
 
-    def create_dictionary_split(
-        self, dictionary_image_path: str, dictionary_sample_size: float
-    ) -> None:
-        """Create a dictionary split from a directory of images.
-
-        Args:
-            dictionary_image_path (str): Path to the directory with dictionary images.
-            dictionary_sample_size (float): Descriptors fraction for sampling.
-
-        """
-        descriptors_list = []
-        for image_entry in os.scandir(dictionary_image_path):
-            image = self._read_image(image_entry.path)
-            _, descriptors = self._compute_sift_features(image)
-            descriptors = self._get_sample_descriptors(descriptors, dictionary_sample_size)
-            descriptors_list.extend(descriptors)
-
-        self.dictionary = pd.DataFrame(descriptors_list)
-
-    def create_train_test_split(self, train_image_path: str, test_image_path: str) -> None:
+    def create_train_test_split(self, train_image_path: str, test_image_path: str) -> tuple:
         """Create a train/test split from two directories of images.
 
         Args:
@@ -130,3 +124,13 @@ class FeatureExtractor:
         """
         self.train = self._create_simple_split(train_image_path)
         self.test = self._create_simple_split(test_image_path)
+
+        return self.train, self.test
+
+    def create_dictionary_split(
+        self, dictionary_image_path: str, dictionary_random_sample_size: float
+    ) -> pd.DataFrame:
+        self.dictionary = self._create_simple_split(
+            dictionary_image_path, True, dictionary_random_sample_size
+        )
+        return self.dictionary

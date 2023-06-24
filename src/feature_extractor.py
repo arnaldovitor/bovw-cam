@@ -116,21 +116,45 @@ class FeatureExtractor:
         return split_dataframe
 
     def create_train_test_split(self, train_image_path: str, test_image_path: str) -> tuple:
-        """Create a train/test split from two directories of images.
+        """
+        Creates a train-test split for the images in the specified directories.
 
         Args:
-            train_image_path (str): The path to the directory containing train images.
-            test_image_path (str): The path to the directory containing test images.
+            train_image_path (str): The path to the directory containing the training images.
+            test_image_path (str): The path to the directory containing the test images.
+
+        Returns:
+            tuple: A tuple containing the train DataFrame and the test DataFrame.
         """
-        self.train = self._create_simple_split(train_image_path)
-        self.test = self._create_simple_split(test_image_path)
+        for subfolder in os.listdir(train_image_path):
+            train_per_class = self._create_simple_split(os.path.join(train_image_path, subfolder))
+            train_per_class['target'] = subfolder
+            self.train = pd.concat([self.train, train_per_class])
+
+        for subfolder in os.listdir(test_image_path):
+            test_per_class = self._create_simple_split(os.path.join(test_image_path, subfolder))
+            test_per_class['target'] = subfolder
+            self.test = pd.concat([self.test, test_per_class])
 
         return self.train, self.test
 
     def create_dictionary_split(
         self, dictionary_image_path: str, dictionary_random_sample_size: float
     ) -> pd.DataFrame:
-        self.dictionary = self._create_simple_split(
-            dictionary_image_path, True, dictionary_random_sample_size
-        )
+        """
+        Creates a dictionary split for the images in the specified directory.
+
+        Args:
+            dictionary_image_path (str): The path to the directory containing the dictionary images.
+            dictionary_random_sample_size (float): The fraction of randomly selected samples.
+
+        Returns:
+            pd.DataFrame: A DataFrame representing the dictionary split.
+        """
+        for subfolder in os.listdir(dictionary_image_path):
+            dict_per_class = self._create_simple_split(
+                os.path.join(dictionary_image_path, subfolder), True, dictionary_random_sample_size
+            )
+            dict_per_class['target'] = subfolder
+            self.dictionary = pd.concat([self.dictionary, dict_per_class])
         return self.dictionary

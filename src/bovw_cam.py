@@ -46,7 +46,7 @@ class BoVWCAM:
         return pooled_image.max(axis=(2, 3))
 
     def _calculate_correlation_matrix(
-        self, dictionary_histogram: pd.DataFrame, target_column_name: str
+        self, dictionary_histogram: pd.DataFrame, target_column_name: str = 'target'
     ) -> list:
         """Calculate the correlation matrix for a given dictionary histogram.
 
@@ -67,7 +67,7 @@ class BoVWCAM:
             ).astype(int)
 
             for column_name in dictionary_histogram.columns:
-                if column_name not in (target_column_name, 'image_path'):
+                if column_name not in (target_column_name, 'temp_target', 'image_path'):
                     matrix_row.append(
                         dictionary_histogram[column_name].corr(
                             dictionary_histogram['temp_target'], method='spearman'

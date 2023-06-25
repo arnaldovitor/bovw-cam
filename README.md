@@ -2,7 +2,7 @@
 
 ![alt text](./assets/view-cat.png)
 
-This repository contains the code and implementation for the paper titled "BoVW-CAM: Visual Explanation from Bag of Visual Words." The paper was presented at the 11th Brazilian Conference on Intelligent Systems (BRACIS 2022).
+This repository contains the code and implementation for the paper titled "BoVW-CAM: Visual Explanation from Bag of Visual Words". The paper was presented at the 11th Brazilian Conference on Intelligent Systems (BRACIS 2022).
 
 # Abstract
 

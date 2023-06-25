@@ -1,12 +1,26 @@
 from typing import Any
 
+import cv2
 import numpy as np
 import pandas as pd
 
 
 class BoVWCAM:
-    def __init__(self, classifier: Any) -> None:
+    def __init__(self, classifier: Any, dictionary_histograms: pd.DataFrame) -> None:
         self.classifier = classifier
+        self.correlation_matrix = self._calculate_correlation_matrix(dictionary_histograms)
+
+    def _read_image(self, image_path: str) -> np.ndarray:
+        """
+        Read an image from the specified path.
+
+        Args:
+            image_path (str): The path to the image.
+
+        Returns:
+            np.ndarray: The image as a numpy array.
+        """
+        return cv2.imread(image_path)
 
     def _max_pooling_2d(
         self,
@@ -77,3 +91,75 @@ class BoVWCAM:
 
         dictionary_histogram.drop('temp_target', axis=1, inplace=True)
         return correlation_matrix
+
+    def _get_histogram_from_image(
+        self, image_path: str, split_histograms: pd.DataFrame
+    ) -> np.ndarray:
+        """
+        Retrieve the histogram from an image.
+
+        Args:
+            image_path (str): The path to the image.
+            split_histograms (pd.DataFrame): Dataframe containing image histograms.
+
+        Returns:
+            np.ndarray: The histogram of the image as a numpy array.
+        """
+        image_histogram = split_histograms[split_histograms['image_path'] == image_path]
+        return image_histogram.drop(['target', 'image_path'], axis=1).to_numpy().reshape(1, -1)
+
+    def _get_keypoints_from_image(
+        self, image_path: str, split_metadata: pd.DataFrame
+    ) -> pd.DataFrame:
+        """
+        Retrieve the keypoints from an image.
+
+        Args:
+            image_path (str): The path to the image.
+            split_metadata (pd.DataFrame): Dataframe containing image metadata.
+
+        Returns:
+            pd.DataFrame: Dataframe containing the keypoints of the image.
+        """
+        return split_metadata[split_metadata['image_path'] == image_path]
+
+    def get_class_activation_map(
+        self,
+        image_path: str,
+        split_histograms: pd.DataFrame,
+        split_metadata: pd.DataFrame,
+        max_pool_params: dict,
+    ) -> np.ndarray:
+        """
+        Generate the class activation map for an image.
+
+        Args:
+            image_path (str): The path to the image.
+            split_histograms (pd.DataFrame): Dataframe containing image histograms.
+            split_metadata (pd.DataFrame): Dataframe containing image metadata.
+            max_pool_params (dict): Parameters for max pooling.
+
+        Returns:
+            np.ndarray: The class activation map as a numpy array.
+        """
+        image = self._read_image(image_path)
+
+        heatmap = np.zeros((image.shape[0], image.shape[1]))
+        sample_histogram = self._get_histogram_from_image(image_path, split_histograms)
+        image_keypoints = self._get_keypoints_from_image(image_path, split_metadata)
+
+        predicted_class = self.classifier.predict(sample_histogram)
+
+        for _, row in image_keypoints.iterrows():
+            heatmap[row['keypoint_coord_y'], row['keypoint_coord_x']] = self.correlation_matrix[
+                predicted_class
+            ][row['cluster_idx']]
+
+        heatmap = (heatmap + 1e-3) * 255
+        heatmap = np.clip(heatmap, 0, 255).astype(np.uint8)
+        heatmap = self._max_pooling_2d(
+            heatmap, max_pool_params['kernel_size'], max_pool_params['stride']
+        )
+        heatmap = cv2.GaussianBlur(heatmap, (9, 9), 0)
+
+        return heatmap

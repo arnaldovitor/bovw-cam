@@ -42,11 +42,14 @@ class BoVW:
         for _, group in extracted_features.groupby('image_path'):
             features = group.drop(columns=self.metadata_columns)
             histogram, cluster_idx = self._get_single_histogram(features)
-            metadata = group[self.metadata_columns[:-1]].iloc[0].tolist()
+            metadata = group[self.metadata_columns[:-1]]
+
             histogram_list.append(
                 [group['image_path'].iloc[0], group['target'].iloc[0]] + histogram
             )
-            metadata_list.extend([metadata + [idx] for idx in cluster_idx])
+            metadata_list.extend(
+                [metadata.iloc[i].tolist() + [cluster_idx[i]] for i in range(len(metadata))]
+            )
 
         histogram_columns = ['image_path', 'target'] + histogram_columns
         histogram_dataframe = pd.DataFrame(histogram_list, columns=histogram_columns)

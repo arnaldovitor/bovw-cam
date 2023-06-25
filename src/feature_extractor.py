@@ -10,9 +10,6 @@ import pandas as pd
 class FeatureExtractor:
     def __init__(self) -> None:
         self.sift = cv2.SIFT_create()
-        self.dictionary = pd.DataFrame()
-        self.train = pd.DataFrame()
-        self.test = pd.DataFrame()
 
     def _compute_sift_features(self, image: np.ndarray) -> tuple:
         """Compute SIFT keypoints and descriptors for an image.
@@ -68,11 +65,11 @@ class FeatureExtractor:
             pd.DataFrame: A DataFrame containing the SIFT features.
         """
         sift_features = []
-        for keypoint, descriptor in zip(keypoints, descriptors, strict=True):
+        for keypoint, descriptor in zip(keypoints, descriptors, strict=False):
             feature = {
                 'image_path': image_path,
-                'keypoint_coord_x': keypoint.pt[0],
-                'keypoint_coord_y': keypoint.pt[1],
+                'keypoint_coord_x': int(keypoint.pt[0]),
+                'keypoint_coord_y': int(keypoint.pt[1]),
             }
 
             for i, value in enumerate(descriptor):
@@ -80,7 +77,12 @@ class FeatureExtractor:
 
             sift_features.append(feature)
 
-        return pd.DataFrame.from_records(sift_features)
+        sift_dataframe = pd.DataFrame.from_records(sift_features)
+        sift_dataframe = sift_dataframe.drop_duplicates(
+            subset=['keypoint_coord_x', 'keypoint_coord_y']
+        )
+
+        return sift_dataframe
 
     def _create_simple_split(
         self,
@@ -126,17 +128,22 @@ class FeatureExtractor:
         Returns:
             tuple: A tuple containing the train DataFrame and the test DataFrame.
         """
+        train_dataframes = []
         for subfolder in os.listdir(train_image_path):
             train_per_class = self._create_simple_split(os.path.join(train_image_path, subfolder))
             train_per_class['target'] = subfolder
-            self.train = pd.concat([self.train, train_per_class])
+            train_dataframes.append(train_per_class)
 
+        test_dataframes = []
         for subfolder in os.listdir(test_image_path):
             test_per_class = self._create_simple_split(os.path.join(test_image_path, subfolder))
             test_per_class['target'] = subfolder
-            self.test = pd.concat([self.test, test_per_class])
+            test_dataframes.append(test_per_class)
 
-        return self.train, self.test
+        train_dataframe = pd.concat(train_dataframes)
+        test_dataframe = pd.concat(test_dataframes)
+
+        return train_dataframe, test_dataframe
 
     def create_dictionary_split(
         self, dictionary_image_path: str, dictionary_random_sample_size: float
@@ -151,10 +158,12 @@ class FeatureExtractor:
         Returns:
             pd.DataFrame: A DataFrame representing the dictionary split.
         """
+        dictionary_dataframes = []
         for subfolder in os.listdir(dictionary_image_path):
             dict_per_class = self._create_simple_split(
                 os.path.join(dictionary_image_path, subfolder), True, dictionary_random_sample_size
             )
             dict_per_class['target'] = subfolder
-            self.dictionary = pd.concat([self.dictionary, dict_per_class])
-        return self.dictionary
+            dictionary_dataframes.append(dict_per_class)
+
+        return pd.concat(dictionary_dataframes)

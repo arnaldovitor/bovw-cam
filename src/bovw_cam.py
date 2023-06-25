@@ -1,12 +1,18 @@
-from typing import Any
-
 import cv2
 import numpy as np
 import pandas as pd
+from classifier_interface import ClassifierInterface
 
 
 class BoVWCAM:
-    def __init__(self, classifier: Any, dictionary_histograms: pd.DataFrame) -> None:
+    def __init__(
+        self, classifier: ClassifierInterface, dictionary_histograms: pd.DataFrame
+    ) -> None:
+        if not isinstance(classifier, ClassifierInterface):
+            raise Exception(
+                'Exception: Invalid classifier type. Expected an instance of ClassifierInterface.'
+            )
+
         self.classifier = classifier
         self.correlation_matrix = self._calculate_correlation_matrix(dictionary_histograms)
 

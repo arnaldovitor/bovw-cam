@@ -2,7 +2,7 @@
 
 ![alt text](./assets/view-cat.png)
 
-This repository contains the official implementation of the BoVW-CAM code. This method is an equivalent to the Grad-CAM method, but it is specifically designed for classifiers based on keypoint features and Bag-of-Visual-Words. For a better understanding of the implementation details, please refer to the paper at: [Link](https://link.springer.com/chapter/10.1007/978-3-031-21689-3_4).
+This repository contains the code and implementation for the paper titled "BoVW-CAM: Visual Explanation from Bag of Visual Words." The paper was presented at the 11th Brazilian Conference on Intelligent Systems (BRACIS 2022).
 
 # Abstract
 

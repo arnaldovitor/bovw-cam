@@ -6,3 +6,4 @@ blue
 pip-audit
 mypy
 pandas
+scikit-learn

@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import pandas as pd
-from classifier_interface import ClassifierInterface
+
+from src.classifier_interface import ClassifierInterface
 
 
 class BoVWCAM:
@@ -166,6 +167,4 @@ class BoVWCAM:
         heatmap = self._max_pooling_2d(
             heatmap, max_pool_params['kernel_size'], max_pool_params['stride']
         )
-        heatmap = cv2.GaussianBlur(heatmap, (9, 9), 0)
-
-        return heatmap
+        return cv2.GaussianBlur(heatmap, (9, 9), 0)

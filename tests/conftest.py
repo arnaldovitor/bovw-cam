@@ -1,6 +1,17 @@
+from typing import Any
 import cv2
 import pandas as pd
+import numpy as np
 from pytest import fixture
+from src.classifier_interface import ClassifierInterface
+
+
+class Classifier(ClassifierInterface):
+    def __init__(self, model: Any) -> None:
+        super().__init__(model)
+    
+    def predict(self, input_sample: Any) -> None:
+        return None
 
 
 @fixture
@@ -30,5 +41,26 @@ def extracted_features():
         'feature_3': [10, 20, 30, 40, 50],
         'feature_4': [5, 10, 15, 20, 25]
     }
+    
+    return pd.DataFrame(data)
+
+
+@fixture
+def classifier():
+    return Classifier(None)
+
+
+@fixture
+def fake_image():
+    return  np.array([[1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9]])
+
+
+@fixture
+def histograms():
+    data = {'histogram_1': [50, 20], 
+            'histogram_2': [20, 30],
+            'target': [1, 0]}
     
     return pd.DataFrame(data)

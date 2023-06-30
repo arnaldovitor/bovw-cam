@@ -78,11 +78,7 @@ class FeatureExtractor:
             sift_features.append(feature)
 
         sift_dataframe = pd.DataFrame.from_records(sift_features)
-        sift_dataframe = sift_dataframe.drop_duplicates(
-            subset=['keypoint_coord_x', 'keypoint_coord_y']
-        )
-
-        return sift_dataframe
+        return sift_dataframe.drop_duplicates(subset=['keypoint_coord_x', 'keypoint_coord_y'])
 
     def _create_simple_split(
         self,

@@ -1,4 +1,4 @@
-from src.bovw_cam import BoVWCAM
+from bovw_cam.bovw_cam import BoVWCAM
 import numpy as np
 
 

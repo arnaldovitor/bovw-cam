@@ -1,4 +1,4 @@
-from src.bovw import BoVW
+from bovw_cam.bovw import BoVW
 
 
 def test_if_kmeans_is_instantiated_correctly(extracted_features):

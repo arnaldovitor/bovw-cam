@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from src.classifier_interface import ClassifierInterface
+from bovw_cam.classifier_interface import ClassifierInterface
 
 
 class BoVWCAM:

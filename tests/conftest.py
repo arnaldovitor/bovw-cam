@@ -3,7 +3,7 @@ import cv2
 import pandas as pd
 import numpy as np
 from pytest import fixture
-from src.classifier_interface import ClassifierInterface
+from bovw_cam.classifier_interface import ClassifierInterface
 
 
 class Classifier(ClassifierInterface):

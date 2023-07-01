@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from src.feature_extractor import FeatureExtractor
+from bovw_cam.feature_extractor import FeatureExtractor
 
 
 def test_if_the_image_was_loaded_correctly(correct_image_path):
